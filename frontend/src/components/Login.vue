@@ -1,0 +1,59 @@
+<template>
+    <div class="Panel">
+    <h1>Login</h1>
+    <form @submit.prevent="login">
+        <label for="username">Username:</label>
+        <input class="form-control" type="text" v-model="username" required>
+        <br>
+        <label  for="password">Password:</label>
+        <input class="form-control" type="password" v-model="password" required>
+        <br>
+        <button class="btn btn-primary" type="submit">Login</button>
+      </form>
+      <div v-if="error" class="message error-message">{{ error }}</div>
+      <div v-if="message" class="message success-message">{{ message }}</div>
+    </div>
+</template>
+
+<script>
+import axios from 'axios';
+export default {
+    name:"Login",
+    data() {
+    return {
+        username: '',
+        password: '',
+        error: null,
+        message: null,
+      };
+
+  },
+    components:{
+        
+    },
+    methods:{
+        async login(){
+            try{
+                const response = await axios.post('login', {
+                username: this.username,
+                password: this.password,
+                });
+                const msg = response.data.message;
+            
+            } catch (error) {
+            console.log(error)
+            this.error = 'Invalid credentials';
+        }
+        setTimeout(() => {
+            this.message = null;
+            this.error = null;
+        }, 3000);
+        }
+
+    }
+}
+</script>
+
+<style>
+
+</style>
