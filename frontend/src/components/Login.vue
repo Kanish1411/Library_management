@@ -1,5 +1,7 @@
 <template>
-    <div class="Panel">
+    <div>
+    <Navbar register/>
+    <div class="container-color">
     <h1>Login</h1>
     <form @submit.prevent="login">
         <label for="username">Username:</label>
@@ -8,17 +10,25 @@
         <label  for="password">Password:</label>
         <input class="form-control" type="password" v-model="password" required>
         <br>
+        <a href="/forgot">Forgot Password?</a>
+        <br>
         <button class="btn btn-primary" type="submit">Login</button>
       </form>
-      <div v-if="error" class="message error-message">{{ error }}</div>
+      <div v-if="error" class="message error-message"><b>{{ error }}</b></div>
       <div v-if="message" class="message success-message">{{ message }}</div>
+    </div>
     </div>
 </template>
 
 <script>
 import axios from 'axios';
+import Navbar from './Navbar.vue';
+
 export default {
-    name:"Login",
+    name:"login",
+    components:{
+        Navbar,
+    },
     data() {
     return {
         username: '',
@@ -28,17 +38,19 @@ export default {
       };
 
   },
-    components:{
-        
-    },
     methods:{
         async login(){
             try{
                 const response = await axios.post('login', {
-                username: this.username,
-                password: this.password,
+                    username: this.username,
+                    password: this.password,
                 });
                 const msg = response.data.message;
+                if(msg=="user found"){
+                    
+                }
+                else
+                    this.error=msg;
             
             } catch (error) {
             console.log(error)
