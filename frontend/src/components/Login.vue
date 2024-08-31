@@ -46,9 +46,17 @@ export default {
                     password: this.password,
                 });
                 const msg = response.data.message;
-                if(msg=="user found"){
-                    console.log("uahsdiuhb")
+                if(msg=="Admin Login"){
+                    console.log("Admin")
                 }
+                else if(msg=="Librarian Login"){
+                    console.log("Librarian");
+                    
+                }
+                else if(msg=="User Login"){
+                    console.log("user");
+                    
+                }   
                 else
                     this.error=msg;
             

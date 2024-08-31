@@ -1,57 +1,47 @@
 from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import hashlib
-from werkzeug.security import generate_password_hash,check_password_hash
-from worker import celery_init_app
-from tasks import send_email_task
 import random
-app=Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"]="sqlite:///DB.db"
+from werkzeug.security import generate_password_hash, check_password_hash
+from models import db, User, Role
+# from worker import celery_init_app
+from tasks import send_email_task
+
+app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///DB.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db=SQLAlchemy(app=app)
-
-celery=celery_init_app(app)
-celery.set_default()
-
+# celery = celery_init_app(app)
+db.init_app(app)
 CORS(app)
 
-class Role(db.Model):
-    id=db.Column(db.Integer,primary_key=True, autoincrement=True)
-    name=db.Column(db.String(10),nullable=False)
-
-class User(db.Model):
-    id=db.Column(db.Integer,primary_key=True, autoincrement=True)
-    name=db.Column(db.String(10),nullable=False)
-    email=db.Column(db.String(10),nullable=False)
-    pwd=db.Column(db.String(10),nullable=False)
-    role=db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
-
-
-@app.route("/login",methods=["POST"])
+@app.route("/login", methods=["POST"])
 def login():
-    req=request.get_json()
-    user=req.get("username")
-    pwd=req.get("password")
-    u=User.query.filter_by(name=user).first()
-    if u and check_password_hash(u.pwd,pwd):
-        return {"message":"user found"}
-    return {"message":"user Not found"}, 400
+    req = request.get_json()
+    user = req.get("username")
+    pwd = req.get("password")
+    u = User.query.filter_by(name=user).first()
+    if u and check_password_hash(u.pwd, pwd):
+        if u.role==1:
+           #jwt
+           return {"message":"Admin Login"}
+        if u.role==2:
+           return {"message":"Librarian Login"}
+        return {"message":"User Login"}
+    return {"message": "user Not found"}
 
-@app.route("/register",methods=["POST"])
+@app.route("/register", methods=["POST"])
 def register():
-    r=request.get_json()
-    print(r)
-    u=User.query.filter_by(name=r.get("username")).first()
+    r = request.get_json()
+    u = User.query.filter_by(name=r.get("username")).first()
     if u:
-        return {"message":"Username Already Exists"}
-    u=User.query.filter_by(email=r.get("email")).first()
+        return {"message": "Username Already Exists"}
+    u = User.query.filter_by(email=r.get("email")).first()
     if u:
-        return {"message":"Email Already Exists"}
-    u=User(name=r.get("username"),email=r.get("email"),pwd=generate_password_hash(r.get("password")),role=2)
+        return {"message": "Email Already Exists"}
+    u = User(name=r.get("username"), email=r.get("email"), pwd=generate_password_hash(r.get("password")), role=2)
     db.session.add(u)
     db.session.commit()
-    return {"message":"registration Succesful"}
+    return {"message": "registration Successful"}
 
 @app.route("/forgot_pwd",methods=["POST"])
 def forgot_pwd():
@@ -65,19 +55,21 @@ def forgot_pwd():
     send_email_task(u.email, 'Your OTP Code', f'Your OTP code to change password is {otp}')
     return {"msg":"An OTP is sent to your email","hash":h}
 
-@app.route("/change_pwd",methods=["POST"])
+@app.route("/change_pwd", methods=["POST"])
 def change_pwd():
-    u=User.query.filter_by(email=request.get_json().get("email")).first()
-    u.pwd=generate_password_hash(request.get_json().get("pwd"))
+    u = User.query.filter_by(email=request.get_json().get("email")).first()
+    u.pwd = generate_password_hash(request.get_json().get("pwd"))
     db.session.commit()
-    return {"msg":"Password changes Redirecting to login page"}
+    return {"msg": "Password changed. Redirecting to login page"}
 
-if __name__=="__main__":
+if __name__ == "__main__":
     with app.app_context():
         db.create_all()
         if Role.query.first() is None:
+            db.session.add(Role(name='Admin'))
             db.session.add(Role(name='Librarian'))
             db.session.add(Role(name='User'))
-            db.session.add(User(name="Libraian",email="kanishkark1411@gmail.com",role=1,pwd="pass"))
+            db.session.add(User(name="Librarian", email="kanishkark1411@gmail.com", role=2, pwd=generate_password_hash("pass")))
+            db.session.add(User(name="Admin", email="kanram27@gmail.com", role=1, pwd=generate_password_hash("pass")))
             db.session.commit()
-    app.run(debug=True,port="5000")
+    app.run(debug=True, port="5000")
