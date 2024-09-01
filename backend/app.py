@@ -3,7 +3,7 @@ from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS
 import hashlib
 import random
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Role
 # from worker import celery_init_app
@@ -16,9 +16,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 CORS(app)
 
+app.config['JWT_SECRET_KEY'] = 'asdfghjkl'
+jwt=JWTManager(app)
+
 def auth(role):
-    def wrapper(a):
-        @wraps(a)
+    def wrapper(fn):
+        @wraps(fn)
         @jwt_required()
         def decorator(*args,**kwargs):
             uid=get_jwt_identity()
@@ -27,9 +30,20 @@ def auth(role):
                 return make_response({"msg":"User not found"},404)
             if(not u.has_role(role)):
                 return make_response({"msg":"Invalid Role"},404)
-            return a(*args,**kwargs)
+            return fn(*args,**kwargs)
         return decorator
     return wrapper
+
+@app.route("/checkLogin",methods=["GET"])
+@jwt_required()
+def checkLogin():
+    tk=request.headers.get("Authorization")
+    tk=tk.split(" ")[1]
+    u=User.query.filter_by(id=get_jwt_identity()).all()
+    for i in u: 
+        if i.role in [1,2,3]:
+            return {"msg":"Valid"}
+    return {"msg": "Invalid"}
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -40,13 +54,13 @@ def login():
     if u and check_password_hash(u.pwd, pwd):
         if u.role==1:
            token=create_access_token(identity=u.id, additional_claims={"role": "Admin"})
-           return {"message":"Admin Login",'access_token': token}
+           return {"message":"Admin Login",'token': token}
         if u.role==2:
            token=create_access_token(identity=u.id, additional_claims={"role": "Librarian"})
-           return {"message":"Librarian Login",'access_token': token,"id":u.id}
+           return {"message":"Librarian Login",'token': token,"id":u.id}
         
         token=create_access_token(identity=u.id, additional_claims={"role": "User"})
-        return {"message":"User Login",'access_token': token,"id":u.id}
+        return {"message":"User Login",'token': token,"id":u.id}
     return {"message": "user Not found"}
 
 @app.route("/register", methods=["POST"])

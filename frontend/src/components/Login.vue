@@ -46,20 +46,21 @@ export default {
                     password: this.password,
                 });
                 const msg = response.data.message;
+                this.$store.commit("setlogin",true);
                 if(msg=="Admin Login"){
-                    console.log("Admin")
+                    localStorage.setItem("token",response.data.token);
                 }
                 else if(msg=="Librarian Login"){
                     console.log("Librarian");
+                    localStorage.setItem("token",response.data.token);
                     
                 }
                 else if(msg=="User Login"){
                     console.log("user");
-                    
+                    localStorage.setItem("token",response.data.token);
                 }   
                 else
                     this.error=msg;
-            
             } catch (error) {
             console.log(error)
             this.error = 'Invalid credentials';
