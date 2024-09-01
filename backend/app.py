@@ -1,7 +1,9 @@
-from flask import Flask, jsonify, request
+from functools import wraps
+from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS
 import hashlib
 import random
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Role
 # from worker import celery_init_app
@@ -14,6 +16,21 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 CORS(app)
 
+def auth(role):
+    def wrapper(a):
+        @wraps(a)
+        @jwt_required()
+        def decorator(*args,**kwargs):
+            uid=get_jwt_identity()
+            u=db.session.get(User,uid)
+            if not u:
+                return make_response({"msg":"User not found"},404)
+            if(not u.has_role(role)):
+                return make_response({"msg":"Invalid Role"},404)
+            return a(*args,**kwargs)
+        return decorator
+    return wrapper
+
 @app.route("/login", methods=["POST"])
 def login():
     req = request.get_json()
@@ -22,11 +39,14 @@ def login():
     u = User.query.filter_by(name=user).first()
     if u and check_password_hash(u.pwd, pwd):
         if u.role==1:
-           #jwt
-           return {"message":"Admin Login"}
+           token=create_access_token(identity=u.id, additional_claims={"role": "Admin"})
+           return {"message":"Admin Login",'access_token': token}
         if u.role==2:
-           return {"message":"Librarian Login"}
-        return {"message":"User Login"}
+           token=create_access_token(identity=u.id, additional_claims={"role": "Librarian"})
+           return {"message":"Librarian Login",'access_token': token,"id":u.id}
+        
+        token=create_access_token(identity=u.id, additional_claims={"role": "User"})
+        return {"message":"User Login",'access_token': token,"id":u.id}
     return {"message": "user Not found"}
 
 @app.route("/register", methods=["POST"])
