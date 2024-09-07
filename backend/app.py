@@ -1,11 +1,11 @@
+from datetime import datetime
 from functools import wraps
 from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS
-import hashlib
-import random
+import hashlib, random
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Role
+from models import db, User, Role, Section
 # from worker import celery_init_app
 from tasks import send_email_task
 
@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 CORS(app)
 
-app.config['JWT_SECRET_KEY'] = 'asdfghjkl'
+app.config['JWT_SECRET_KEY'] = 'asdfghjklmnbvcxz'
 jwt=JWTManager(app)
 
 def auth(role):
@@ -26,6 +26,7 @@ def auth(role):
         def decorator(*args,**kwargs):
             uid=get_jwt_identity()
             u=db.session.get(User,uid)
+            print(u)
             if not u:
                 return make_response({"msg":"User not found"},404)
             if(not u.has_role(role)):
@@ -45,6 +46,18 @@ def checkLogin():
             return {"msg":"Valid"}
     return {"msg": "Invalid"}
 
+@app.route("/checkLib",methods=["GET"])
+@jwt_required()
+def checkLib():
+    tk=request.headers.get("Authorization")
+    tk=tk.split(" ")[1]
+    u=User.query.filter_by(id=get_jwt_identity()).all()
+    for i in u: 
+        if i.role == 2 :
+            return {"msg":"Valid"}
+    return {"msg": "Invalid"}
+
+
 @app.route("/login", methods=["POST"])
 def login():
     req = request.get_json()
@@ -58,10 +71,9 @@ def login():
         if u.role==2:
            token=create_access_token(identity=u.id, additional_claims={"role": "Librarian"})
            return {"message":"Librarian Login",'token': token,"id":u.id}
-        
         token=create_access_token(identity=u.id, additional_claims={"role": "User"})
         return {"message":"User Login",'token': token,"id":u.id}
-    return {"message": "user Not found"}
+    return {"message": "User not Found"}
 
 @app.route("/register", methods=["POST"])
 def register():
@@ -95,6 +107,24 @@ def change_pwd():
     u.pwd = generate_password_hash(request.get_json().get("pwd"))
     db.session.commit()
     return {"msg": "Password changed. Redirecting to login page"}
+
+@app.route("/Lib_fetch",methods=["GET"])
+@auth("Librarian")
+def fetch_lib():
+    s=Section.query.all()
+    l=[]
+    for i in s:
+        l.append({"id":i.id,"name":i.name,"desc":i.desc,"date":i.date_created})
+    return {"Section":l}
+
+@app.route("/add_sec",methods=["POST"])
+@auth("Librarian")
+def Add_section():
+    v=request.get_json()
+    s=Section(name=v.get("name"),date_created= datetime.strptime(v.get("date"), "%Y-%m-%d").date(),desc=v.get("desc"))
+    db.session.add(s)
+    db.session.commit()
+    return {"msg":"Done"}
 
 if __name__ == "__main__":
     with app.app_context():

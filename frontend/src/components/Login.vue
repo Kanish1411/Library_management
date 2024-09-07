@@ -23,6 +23,7 @@
 <script>
 import axios from 'axios';
 import Navbar from './Navbar.vue';
+import Librarian from './Librarian.vue';
 
 export default {
     name:"login",
@@ -49,11 +50,12 @@ export default {
                 this.$store.commit("setlogin",true);
                 if(msg=="Admin Login"){
                     localStorage.setItem("token",response.data.token);
+                    this.$router.push("/Admin")
                 }
                 else if(msg=="Librarian Login"){
                     console.log("Librarian");
                     localStorage.setItem("token",response.data.token);
-                    
+                    this.$router.push("/Librarian")
                 }
                 else if(msg=="User Login"){
                     console.log("user");

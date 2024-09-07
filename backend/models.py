@@ -17,7 +17,7 @@ class User(db.Model):
         if ri!=None and ri.id==self.role:
             return True
         return False
-
+    
 class Section(db.Model):
     id=db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(10), nullable=False)

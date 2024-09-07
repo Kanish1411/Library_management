@@ -12,6 +12,9 @@
         <li class="nav-item active" v-if="register">
           <a class="nav-link active" href="/register">Register</a>
         </li>
+        <li class="nav-item active" v-if="addsec">
+          <a class="nav-link active" href="/addsec">Add Section</a>
+        </li>
       </ul>
     </div>
   </div>
@@ -25,7 +28,11 @@ export default {
       register:{
         type:Boolean,
         default:false
-      }
+      },
+      addsec:{
+        type:Boolean,
+        default:false
+      },
       
     },
 }
