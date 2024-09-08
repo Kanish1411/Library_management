@@ -140,8 +140,8 @@ def upload_book():
     author = data.get('author')
     image_base64 = data.get('image')
     content_base64 = data.get('content')
-    image_bytes = base64.b64decode(image_base64) if image_base64 else None
-    content_bytes = base64.b64decode(content_base64) if content_base64 else None
+    image_bytes = base64.b64decode(image_base64)
+    content_bytes = base64.b64decode(content_base64)
     new_book = Book(name=name, Author=author, image=image_bytes, content=content_bytes)
     db.session.add(new_book)
     db.session.commit()
@@ -157,6 +157,17 @@ def Delete_book():
         db.session.commit()
     return {"msg":"deleted"}
 
+@app.route('/book/<int:book_id>', methods=['GET'])
+def get_book(book_id):
+    book = Book.query.filter_by(id=book_id).first()
+    if book and book.content:
+        content_base64 = base64.b64encode(book.content).decode('utf-8')
+        return jsonify({
+            'book_id': book_id,
+            'book_content': content_base64
+        })
+    else:
+        return jsonify({'error': 'Book not found or no content available'}), 404
 
 if __name__ == "__main__":
     with app.app_context():

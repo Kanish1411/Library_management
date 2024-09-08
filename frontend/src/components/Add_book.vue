@@ -1,6 +1,6 @@
 <template>
  <div v-if="$store.state.login && $store.state.lib ">
-    <Navbar />
+    <Navbar libdash addsec/>
     <div class="container-color">
         <h2>Add  Book</h2>
         <br>

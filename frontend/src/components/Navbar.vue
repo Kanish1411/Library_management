@@ -18,6 +18,9 @@
         <li class="nav-item active" v-if="addbook">
           <a class="nav-link active" href="/addbook">Add Book</a>
         </li>
+        <li class="nav-item active" v-if="libdash">
+          <a class="nav-link active" href="/Librarian">Dashboard</a>
+        </li>
       </ul>
     </div>
   </div>
@@ -37,6 +40,10 @@ export default {
         default:false
       },
       addbook:{
+        type:Boolean,
+        default:false
+      },
+      libdash:{
         type:Boolean,
         default:false
       },

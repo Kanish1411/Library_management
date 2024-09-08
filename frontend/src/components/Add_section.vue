@@ -1,6 +1,6 @@
 <template>
   <div v-if="$store.state.login && $store.state.lib ">
-    <Navbar />
+    <Navbar libdash addbook/>
     <div class="container-color">
         <form @submit.prevent="Add_sec">
         <label for="name">Name:</label>
