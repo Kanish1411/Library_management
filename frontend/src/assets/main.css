@@ -42,3 +42,30 @@
   background-color: rgba(0, 0, 0, 0.2);
   width:60%;
 }
+
+.book-container {
+  width:150px;
+  margin: 5px auto;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  background-color: #fff;
+}
+
+.book-image {
+  max-width: 125px;
+  max-height: 200px;
+  display: block;
+  margin-top: 5px;
+}
+.book{
+  display:flex;
+}
+
+.buttons{
+  bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+}
+

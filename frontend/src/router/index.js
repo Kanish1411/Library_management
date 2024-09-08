@@ -5,6 +5,9 @@ import Forgot_pwd from '@/components/Forgot_pwd.vue'
 import Librarian from '@/components/Librarian.vue'
 import Admin from '@/components/Admin.vue'
 import Add_section from '@/components/Add_section.vue'
+import Add_book from '@/components/Add_book.vue'
+import User from '@/components/user.vue'
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -29,6 +32,11 @@ const router = createRouter({
       path:"/librarian"
     },
     {
+      name:"User",
+      component:User,
+      path:"/user/:id"
+    },
+    {
       name:"Admin",
       component:Admin,
       path:"/admin"
@@ -37,6 +45,11 @@ const router = createRouter({
       name:"Addsec",
       component:Add_section,
       path:"/addsec"
+    },
+    {
+      name:"Addbook",
+      component:Add_book,
+      path:"/addbook"
     }
   ]
 })

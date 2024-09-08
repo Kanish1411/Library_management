@@ -15,6 +15,9 @@
         <li class="nav-item active" v-if="addsec">
           <a class="nav-link active" href="/addsec">Add Section</a>
         </li>
+        <li class="nav-item active" v-if="addbook">
+          <a class="nav-link active" href="/addbook">Add Book</a>
+        </li>
       </ul>
     </div>
   </div>
@@ -30,6 +33,10 @@ export default {
         default:false
       },
       addsec:{
+        type:Boolean,
+        default:false
+      },
+      addbook:{
         type:Boolean,
         default:false
       },

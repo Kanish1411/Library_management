@@ -60,6 +60,7 @@ export default {
                 else if(msg=="User Login"){
                     console.log("user");
                     localStorage.setItem("token",response.data.token);
+                    this.$router.push({ name: 'User', params: { id: response.data.id }} );
                 }   
                 else
                     this.error=msg;

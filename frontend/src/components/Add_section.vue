@@ -43,9 +43,8 @@ export default {
                 },{
                     headers:{
                         Authorization:"Bearer "+tk
-                    }
-                }
-            )
+                    }})
+            this.$router.push("/librarian")
         }
 
     },

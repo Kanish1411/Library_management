@@ -1,7 +1,6 @@
 <template>
-    <div v-if="$store.state.login && $store.state.lib">
-      <Navbar addsec addbook />
-      <div v-if="sec.length === 0">
+  <div v-if="$store.state.login">
+    <div v-if="sec.length === 0">
         <h4>No Sections Found</h4>
       </div>
       <div v-else>
@@ -20,45 +19,46 @@
                 alt="Book Cover" 
                 class="book-image"/>
               <div class="buttons">
-                  <button class="btn btn-primary">Update</button> <br>
-                  <button class="btn btn-danger" @click="del(b.id)">Delete</button>
+                  <button class="btn btn-primary">Read</button> <br>
               </div> 
-              <!-- <a 
+              <a
                 v-if="b.content" 
                 :href="'data:application/pdf;base64,' + b.content" 
-                download="book.pdf" 
+                :download= "b.name+'.pdf'"
                 class="book-content-link">
                 Request Download
-              </a> -->
+              </a>
             </div>
           </div>
           <div v-else>
             No Books Found
           </div>
         </div>
-      </div>
-    </div>
-  </template>
+  </div>
+  </div>
+
+</template>
 
 <script>
 import Navbar from './Navbar.vue';
 import axios from 'axios';
 import { checkLogin, checkLib } from '../auth';
 export default {
+    name:"user",
     components:{
-        Navbar,
+        Navbar
     },
     data(){
         return{
-            sec:[],
+            sec:[]
         }
-   },
-   methods:{
+    },
+    methods:{
     async fetch(){
         try{
         let tk=localStorage.getItem("token");
         const resp=await axios.get("/Lib_fetch",{
-            headers:{
+        headers:{
             Authorization:"Bearer "+tk,
             }
         })
@@ -69,22 +69,11 @@ export default {
         console.log(error);
     }
     },
-    async del(id){
-      const tk = localStorage.getItem("token")  
-      const resp=await axios.post("/delete_book",{
-        id:id,
-      },{
-      headers:{
-        Authorization:"Bearer "+tk,
-      }})
-      window.location.reload();
-    }
-   },
-   created(){
-    checkLogin(this.$store, this.$router);
-    checkLib(this.$store, this.$router);
-    this.fetch();
-   },
+    },
+    created(){
+        checkLogin(this.$store, this.$router);
+        this.fetch();
+    },
 }
 </script>
 

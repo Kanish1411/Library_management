@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime
 from functools import wraps
 from flask import Flask, jsonify, make_response, request
@@ -5,7 +6,7 @@ from flask_cors import CORS
 import hashlib, random
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Role, Section
+from models import Book, db, User, Role, Section
 # from worker import celery_init_app
 from tasks import send_email_task
 
@@ -26,7 +27,6 @@ def auth(role):
         def decorator(*args,**kwargs):
             uid=get_jwt_identity()
             u=db.session.get(User,uid)
-            print(u)
             if not u:
                 return make_response({"msg":"User not found"},404)
             if(not u.has_role(role)):
@@ -84,7 +84,7 @@ def register():
     u = User.query.filter_by(email=r.get("email")).first()
     if u:
         return {"message": "Email Already Exists"}
-    u = User(name=r.get("username"), email=r.get("email"), pwd=generate_password_hash(r.get("password")), role=2)
+    u = User(name=r.get("username"), email=r.get("email"), pwd=generate_password_hash(r.get("password")), role=3)
     db.session.add(u)
     db.session.commit()
     return {"message": "registration Successful"}
@@ -108,23 +108,55 @@ def change_pwd():
     db.session.commit()
     return {"msg": "Password changed. Redirecting to login page"}
 
-@app.route("/Lib_fetch",methods=["GET"])
-@auth("Librarian")
+@app.route("/Lib_fetch", methods=["GET"])
+@jwt_required()
 def fetch_lib():
-    s=Section.query.all()
-    l=[]
-    for i in s:
-        l.append({"id":i.id,"name":i.name,"desc":i.desc,"date":i.date_created})
-    return {"Section":l}
+    sections = Section.query.all()
+    section_list = []
+    for section in sections:
+        books = []
+        b=Book.query.all()
+        for book in b: 
+            image_base64 = base64.b64encode(book.image).decode('utf-8')
+            content_base64 = base64.b64encode(book.content).decode('utf-8')
+            books.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64,"content": content_base64,})
+        section_list.append({"id": section.id,"name": section.name,"desc": section.desc,"date": section.date_created,"books": books})
+    return {"Section": section_list}
 
 @app.route("/add_sec",methods=["POST"])
 @auth("Librarian")
 def Add_section():
     v=request.get_json()
-    s=Section(name=v.get("name"),date_created= datetime.strptime(v.get("date"), "%Y-%m-%d").date(),desc=v.get("desc"))
+    s=Section(name=v.get("name"),date_created=datetime.strptime(v.get("date"), "%Y-%m-%d").date(),desc=v.get("desc"))
     db.session.add(s)
     db.session.commit()
     return {"msg":"Done"}
+
+@app.route("/upload_book",methods=["POST"])
+@auth("Librarian")
+def upload_book():
+    data = request.get_json()
+    name = data.get('name')
+    author = data.get('author')
+    image_base64 = data.get('image')
+    content_base64 = data.get('content')
+    image_bytes = base64.b64decode(image_base64) if image_base64 else None
+    content_bytes = base64.b64decode(content_base64) if content_base64 else None
+    new_book = Book(name=name, Author=author, image=image_bytes, content=content_bytes)
+    db.session.add(new_book)
+    db.session.commit()
+    return jsonify({'message': 'Book uploaded successfully!', 'book_id': new_book.id})
+
+@app.route("/delete_book",methods=["POST"])
+@auth("Librarian")
+def Delete_book():
+    v=request.get_json()
+    b=Book.query.filter_by(id=v.get("id")).first()
+    if b:
+        db.session.delete(b)
+        db.session.commit()
+    return {"msg":"deleted"}
+
 
 if __name__ == "__main__":
     with app.app_context():
