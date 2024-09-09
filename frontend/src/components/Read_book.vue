@@ -1,43 +1,63 @@
 <template>
+  <div>
     <div>
-      <iframe v-if="bookContent"
-        :src="'data:application/pdf;base64,' + bookContent+'#toolbar=0'"
-        width="60%"
-      ></iframe>
+      <button @click="next" class="btn btn-primary">Next Page</button>
+      <button @click="prev" class="btn btn-primary">Prev Page</button>
     </div>
-  </template>
-  
-  <script>
-  import axios from "axios";
-  
-  export default {
-    data() {
-      return {
-        bookContent: null,
-      };
+    <div class="img-holder" v-if="img">
+      <img :src="'data:image/png;base64,'+ img" class="responsive-image"/>
+    </div>
+    <div v-else>
+      <p>Loading...</p>
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+
+export default {
+  data() {
+    return {
+      img: null, 
+      pg: 0,
+    };
+  },
+  methods: {
+    async fetchBookPage(book_id, page_no) {
+      try {
+        const response = await axios.get(`/book/${book_id}/${page_no}`)
+        this.img = response.data.page_image;
+      } catch (error) {
+        console.error(error);
+      }
     },
-    methods: {
-      async fetchBook(book_id) {
-        try {
-          const response = await axios.get(`/book/${book_id}`);
-          this.bookContent = response.data.book_content;
-        } catch (error) {
-          console.error(error);
-        }
-      },
-    },
-    mounted() {
+    next() {
+      this.pg += 1;
       const book_id = this.$route.params.book_id;
-      this.fetchBook(book_id);
+      this.fetchBookPage(book_id, this.pg);
     },
-  };
-  </script>
-  <style>
+    prev() {
+      this.pg -= 1;
+      if(this.pg<0){
+        this.pg=0; 
+      }
+      else{
+      const book_id = this.$route.params.book_id;
+      this.fetchBookPage(book_id, this.pg);
+      }
+    }
+  },
+  mounted() {
+    const book_id = this.$route.params.book_id;
+    this.fetchBookPage(book_id, this.pg); // Fetch the first page on load
+  }
+};
+</script>
 
-
-iframe {
+<style>
+img {
   width: 60%;
-  height: 100vh;
+  height: auto;
 }
 </style>
-  

@@ -9,6 +9,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import Book, db, User, Role, Section
 # from worker import celery_init_app
 from tasks import send_email_task
+from PyPDF2 import PdfReader
+from pdf2image import convert_from_bytes
+from io import BytesIO
+
+import fitz
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///DB.db"
@@ -157,18 +162,34 @@ def Delete_book():
         db.session.commit()
     return {"msg":"deleted"}
 
-@app.route('/book/<int:book_id>', methods=['GET'])
-def get_book(book_id):
+
+@app.route('/book/<int:book_id>/<int:page_no>', methods=['GET'])
+def get_book_page(book_id, page_no=0):
     book = Book.query.filter_by(id=book_id).first()
     if book and book.content:
-        content_base64 = base64.b64encode(book.content).decode('utf-8')
-        return jsonify({
-            'book_id': book_id,
-            'book_content': content_base64
-        })
+        try:
+            pdf_data = book.content
+            pdf_stream = BytesIO(pdf_data)
+            doc = fitz.open(stream=pdf_stream, filetype="pdf")
+            if page_no < 0 or page_no >= len(doc):
+                return jsonify({'error': 'Invalid page number'}), 400
+            try:
+                page = doc.load_page(page_no)  
+            except:
+                return {"error":"The End"}
+            pix = page.get_pixmap() 
+            img_byte_arr = BytesIO(pix.tobytes(output="png"))  # Save as PNG
+            img_byte_arr.seek(0)
+            img_base64 = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
+            return jsonify({
+                'book_id': book_id,
+                'page_no': page_no,
+                'page_image': img_base64
+            })
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
     else:
         return jsonify({'error': 'Book not found or no content available'}), 404
-
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
