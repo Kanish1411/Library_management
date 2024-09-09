@@ -17,9 +17,9 @@
               <div class="buttons">
                 <button class="btn btn-primary" @click="$router.push({ path: `/book/${b.id}` })">Read</button>
               </div> 
-              <a v-if="b.content" :href="'data:application/pdf;base64,' + b.content" :download= "b.name+'.pdf'" class="book-content-link">
+              <button v-if="b.content" @click="RequestPDF" class="btn btn-primary">
                 Request Download
-              </a>
+              </button>
             </div>
           </div>
           <div v-else>
@@ -59,6 +59,9 @@ export default {
           console.log(error);
       }
       },
+      async RequestPDF(){
+        console.log("jkadhakah")
+      }
     },
     created(){
         checkLogin(this.$store, this.$router);

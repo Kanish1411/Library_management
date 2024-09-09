@@ -17,7 +17,10 @@
       <div v-if="error" class="message error-message"><b>{{ error }}</b></div>
       <div v-if="message" class="message success-message">{{ message }}</div>
     </div>
-    </div>
+    <div class="controls">
+  </div>    
+</div>
+
 </template>
 
 <script>

@@ -47,9 +47,9 @@
   width:150px;
   margin: 5px auto;
   padding: 5px;
-  border: 1px solid #ccc;
+  border: 1px solid #000000;
   border-radius: 15px;
-  background-color: #fff;
+  background-color: #858585a2;
 }
 
 .book-image {
@@ -78,7 +78,6 @@
 }
 .responsive-image {
   max-width: 100%;
-  max-height: 95vh;
+  max-height: 90vh;
   object-fit: contain;
-  border: 1px solid #ccc;
 }

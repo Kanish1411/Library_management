@@ -12,11 +12,52 @@
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
     <style>
-      body{
+      body {
+        transition: background 1.5s ease;
+      }
+      .gradient-background {
         background: linear-gradient(270deg, #fff09e, #feb47b7a, #86a8e7b4, #a5e6a6bb);
         background-size: 400% 400%;
         animation: gradientShift 16s ease infinite;
       }
+      .light-mode {
+        background-color: rgb(216, 216, 216);
+      }
+      .dark-mode {
+        background-color: #333;
+        color: white;
+      }
+      @keyframes gradientShift {
+        0% { background-position: 0% 0%; }
+        50% { background-position: 100% 100%; }
+        100% { background-position: 0% 0%; }
+      }
+      .controls{
+        position: relative;
+        bottom: 0;
+        width: 100%; 
+        text-align: center;
+      }
     </style>
+  </head>
+  <body>
+    <div class="controls">
+      <button class="btn btn-primary" id="gradientButton">Gradient Background</button>
+      <button class="btn btn-light" id="light">Light mode</button>
+      <button class="btn btn-dark" id="darkModeButton">Dark Mode</button>
+    </div>
+    <script>
+      document.body.className = 'gradient-background';
+      document.getElementById('gradientButton').addEventListener('click', () => {
+        document.body.className = 'gradient-background';
+      });
+  
+      document.getElementById('light').addEventListener('click', () => {
+        document.body.className = 'light-mode';
+      });
+      document.getElementById('darkModeButton').addEventListener('click', () => {
+        document.body.className = 'dark-mode';
+      });
+    </script>
   </body>
-</html>
+  </html>
