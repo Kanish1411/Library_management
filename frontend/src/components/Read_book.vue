@@ -27,6 +27,12 @@ export default {
     async fetchBookPage(book_id, page_no) {
       try {
         const response = await axios.get(`/book/${book_id}/${page_no}`)
+        console.log(response)
+        if(response.data.error=="Invalid page number"){
+          this.pg-=1;
+          alert("the Book is over")
+          response = await axios.get(`/book/${book_id}/${this.pg}`)
+        }
         this.img = response.data.page_image;
       } catch (error) {
         console.error(error);

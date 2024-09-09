@@ -172,11 +172,8 @@ def get_book_page(book_id, page_no=0):
             pdf_stream = BytesIO(pdf_data)
             doc = fitz.open(stream=pdf_stream, filetype="pdf")
             if page_no < 0 or page_no >= len(doc):
-                return jsonify({'error': 'Invalid page number'}), 400
-            try:
-                page = doc.load_page(page_no)  
-            except:
-                return {"error":"The End"}
+                return jsonify({'error': 'Invalid page number'})
+            page = doc.load_page(page_no)  
             pix = page.get_pixmap() 
             img_byte_arr = BytesIO(pix.tobytes(output="png"))  # Save as PNG
             img_byte_arr.seek(0)
