@@ -42,22 +42,21 @@
   </head>
   <body>
     <div class="controls">
-      <button class="btn btn-primary" id="gradientButton">Gradient Background</button>
-      <button class="btn btn-light" id="light">Light mode</button>
-      <button class="btn btn-dark" id="darkModeButton">Dark Mode</button>
+      <button class="btn btn-primary" onclick="gradient()">Gradient Background</button>
+      <button class="btn btn-light" onclick="light()">Light mode</button>
+      <button class="btn btn-dark" onclick="dark()">Dark Mode</button>
     </div>
     <script>
       document.body.className = 'gradient-background';
-      document.getElementById('gradientButton').addEventListener('click', () => {
+      function gradient(){
         document.body.className = 'gradient-background';
-      });
-  
-      document.getElementById('light').addEventListener('click', () => {
+      }
+      function light(){
         document.body.className = 'light-mode';
-      });
-      document.getElementById('darkModeButton').addEventListener('click', () => {
+      }
+      function dark(){
         document.body.className = 'dark-mode';
-      });
+      }
     </script>
   </body>
   </html>

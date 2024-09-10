@@ -160,7 +160,6 @@ def Delete_book():
         db.session.commit()
     return {"msg":"deleted"}
 
-
 @app.route('/book/<int:book_id>/<int:page_no>', methods=['GET'])
 def get_book_page(book_id, page_no=0):
     book = Book.query.filter_by(id=book_id).first()
@@ -168,7 +167,6 @@ def get_book_page(book_id, page_no=0):
         try:
             pdf_stream = BytesIO(book.content)
             doc = fitz.open(stream=pdf_stream, filetype="pdf")
-            print(len(doc))
             if page_no < 0 or page_no >= len(doc):
                 return jsonify({'error': 'Invalid page number'})
             page = doc.load_page(page_no)  
