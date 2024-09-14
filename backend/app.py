@@ -158,8 +158,6 @@ def Delete_book():
         db.session.delete(b)
         db.session.commit()
     return {"msg":"deleted"}
-
-<<<<<<< HEAD
 @app.route("/fetch_bk_det",methods=["POST"])
 def fetch_bk_det():
     print(request.get_json().get("bk_id"))
@@ -171,8 +169,6 @@ def fetch_bk_det():
         l.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64})
     return {"book":l}
 
-=======
->>>>>>> 80473d44606779dc94abf5b9a85ecb62179a2553
 @app.route('/book/<int:book_id>/<int:page_no>', methods=['GET'])
 def get_book_page(book_id, page_no=0):
     book = Book.query.filter_by(id=book_id).first()
