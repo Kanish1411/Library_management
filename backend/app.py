@@ -8,7 +8,7 @@ from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import Book, db, User, Role, Section
 # from worker import celery_init_app
-from tasks import send_email_task
+from tasks import send_email_task, send_pdf_task
 from io import BytesIO
 
 import fitz
@@ -118,11 +118,10 @@ def fetch_lib():
     section_list = []
     for section in sections:
         books = []
-        b=Book.query.all()
+        b=Book.query.filter_by(sec_id=section.id,available=True).all()
         for book in b: 
             image_base64 = base64.b64encode(book.image).decode('utf-8')
-            content_base64 = base64.b64encode(book.content).decode('utf-8')
-            books.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64,"content": content_base64,})
+            books.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64})
         section_list.append({"id": section.id,"name": section.name,"desc": section.desc,"date": section.date_created,"books": books})
     return {"Section": section_list}
 
@@ -160,6 +159,16 @@ def Delete_book():
         db.session.commit()
     return {"msg":"deleted"}
 
+@app.route("/fetch_bk_det",methods=["POST"])
+def fetch_bk_det():
+    print(request.get_json().get("bk_id"))
+    book=Book.query.filter_by(id=request.get_json().get("bk_id")).first()
+    l=[]
+    if book:
+        image_base64 = base64.b64encode(book.image).decode('utf-8')
+        # sec=Section.quer
+        l.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64})
+    return {"book":l}
 
 @app.route('/book/<int:book_id>/<int:page_no>', methods=['GET'])
 def get_book_page(book_id, page_no=0):
@@ -181,7 +190,17 @@ def get_book_page(book_id, page_no=0):
             return jsonify({'error': str(e)}), 400
     else:
         return jsonify({'error': 'Book not found or no content available'})
-    
+
+@app.route("/request_book",methods=["POST"])
+def request_book():
+    v=request.get_json()
+    u=User.query.filter_by(id=v.get("id")).first()
+    bk=Book.query.filter_by(id=v.get("bk_id")).first()
+    send_pdf_task(u.email, f'Book requested {bk.name}',
+                  f'The Book {bk.name} written by {bk.Author} is now for u to download and enjoy!! \n Only at Rs: 199 \n Please Complete The payment process',
+                  bk.content, bk.name+".pdf")
+    return {"msg":"Book sent to Your mail"}
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()

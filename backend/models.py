@@ -26,7 +26,9 @@ class Section(db.Model):
 
 class Book(db.Model):
     id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+    sec_id=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     name = db.Column(db.String(10), nullable=False)
     Author = db.Column(db.String(20), nullable=False)
     image = db.Column(db.LargeBinary, nullable=True)
     content=db.Column(db.LargeBinary, nullable=True)
+    available=db.Column(db.Boolean,default=True)

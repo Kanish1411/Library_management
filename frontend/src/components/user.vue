@@ -15,11 +15,8 @@
               <p>Author(s): {{ b.author }}</p>
               <img v-if="b.image" :src="'data:image/jpeg;base64,' + b.image" alt="Book Cover"  class="book-image"/>
               <div class="buttons">
-                <button class="btn btn-primary" @click="$router.push({ path: `/book/${b.id}` })">Read</button>
+                <button class="btn btn-primary" @click="$router.push({ path:`/get_book/${this.idu}/${b.id}`})">GET</button><br>
               </div> 
-              <button v-if="b.content" @click="RequestPDF" class="btn btn-primary">
-                Request Download
-              </button>
             </div>
           </div>
           <div v-else>
@@ -42,6 +39,7 @@ export default {
     data(){
         return{
             sec:[],
+            idu:0,
         }
     },
     methods:{   
@@ -59,17 +57,19 @@ export default {
           console.log(error);
       }
       },
-      async RequestPDF(){
-        console.log("jkadhakah")
-      }
+      async getBook(id){
+        const tk=localStorage.getItem("token");
+
+
+      },
+
     },
     created(){
         checkLogin(this.$store, this.$router);
         this.fetch();
+        this.idu=this.$route.params.id;
     },
 }
 </script>
-
 <style>
-
 </style>
