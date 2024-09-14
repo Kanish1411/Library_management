@@ -57,12 +57,9 @@ export default {
           console.log(error);
       }
       },
-      async getBook(id){
-        const tk=localStorage.getItem("token");
-
-
-      },
-
+      async RequestPDF(){
+        console.log("jkadhakah")
+      }
     },
     created(){
         checkLogin(this.$store, this.$router);
