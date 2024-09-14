@@ -56,7 +56,7 @@ const router = createRouter({
     {
       name:"readbook",
       component:Read_book,
-      path:"/book/:book_id"
+      path:"/book/:id/:book_id"
     },
     {
       name:"get_book",

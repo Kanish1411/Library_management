@@ -1,12 +1,12 @@
 import base64
 from datetime import datetime
 from functools import wraps
-from flask import Flask, jsonify, make_response, request
+from flask import Flask,  jsonify, make_response, request
 from flask_cors import CORS
 import hashlib, random
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Book, db, User, Role, Section
+from models import Book, db, User, Role, Section,Requests
 # from worker import celery_init_app
 from tasks import send_email_task, send_pdf_task
 from io import BytesIO
@@ -19,7 +19,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # celery = celery_init_app(app)
 db.init_app(app)
 CORS(app)
-
 app.config['JWT_SECRET_KEY'] = 'asdfghjklmnbvcxz'
 jwt=JWTManager(app)
 
@@ -125,6 +124,16 @@ def fetch_lib():
         section_list.append({"id": section.id,"name": section.name,"desc": section.desc,"date": section.date_created,"books": books})
     return {"Section": section_list}
 
+@app.route("/sections",methods=["GET"])
+@auth("Librarian")
+def sections():
+    l=[]
+    s=Section.query.all()
+    print(s)
+    for i in s:
+        l.append({"name":i.name,"id":i.id})
+    return l
+
 @app.route("/add_sec",methods=["POST"])
 @auth("Librarian")
 def Add_section():
@@ -142,12 +151,13 @@ def upload_book():
     author = data.get('author')
     image_base64 = data.get('image')
     content_base64 = data.get('content')
+    section=data.get("section")
     image_bytes = base64.b64decode(image_base64)
     content_bytes = base64.b64decode(content_base64)
-    new_book = Book(name=name, Author=author, image=image_bytes, content=content_bytes)
+    new_book = Book(name=name, Author=author, image=image_bytes, content=content_bytes,sec_id=section)
     db.session.add(new_book)
     db.session.commit()
-    return jsonify({'message': 'Book uploaded successfully!', 'book_id': new_book.id})
+    return jsonify({'message': 'Book uploaded successfully!'})
 
 @app.route("/delete_book",methods=["POST"])
 @auth("Librarian")
@@ -158,6 +168,7 @@ def Delete_book():
         db.session.delete(b)
         db.session.commit()
     return {"msg":"deleted"}
+
 @app.route("/fetch_bk_det",methods=["POST"])
 def fetch_bk_det():
     print(request.get_json().get("bk_id"))
@@ -165,7 +176,7 @@ def fetch_bk_det():
     l=[]
     if book:
         image_base64 = base64.b64encode(book.image).decode('utf-8')
-        # sec=Section.quer
+        # sec=Section.query
         l.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64})
     return {"book":l}
 
@@ -194,10 +205,29 @@ def request_book():
     v=request.get_json()
     u=User.query.filter_by(id=v.get("id")).first()
     bk=Book.query.filter_by(id=v.get("bk_id")).first()
-    send_pdf_task(u.email, f'Book requested {bk.name}',
-                  f'The Book {bk.name} written by {bk.Author} is now for u to download and enjoy!! \n Only at Rs: 199 \n Please Complete The payment process',
-                  bk.content, bk.name+".pdf")
-    return {"msg":"Book sent to Your mail"}
+    r=Requests.query.filter_by(req="pdf",user_id=v.get("id"),book_id=v.get("bk_id")).first()
+    if r == None:
+        r=Requests(req="pdf",user_id=v.get("id"),book_id=v.get("bk_id"))
+        db.session.add(r)
+        db.session.commit()
+        return {"msg":"Book PDF request Sent"}
+    return {"err":"Already Requested"}
+    #--------------------------
+    # send_pdf_task(u.email, f'Book requested {bk.name}',
+    #               f'The Book {bk.name} written by {bk.Author} is now for u to download and enjoy!! \n Only at Rs: 199 \n Please Complete The payment process',
+    #               bk.content, bk.name+".pdf")
+    
+@app.route("/get_book",methods=["POST"])
+def get_book():
+    v=request.get_json()
+    r=Requests.query.filter_by(req="Book",user_id=v.get("id"),book_id=v.get("bk_id")).first()
+    if r == None:
+        r=Requests(req="Book",user_id=v.get("id"),book_id=v.get("bk_id"))
+        db.session.add(r)
+        db.session.commit()
+        return {"msg":"Request Successful"}
+    return {"err":"Already Requested"}
+
 
 if __name__ == "__main__":
     with app.app_context():

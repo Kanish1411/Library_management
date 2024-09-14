@@ -1,4 +1,6 @@
 <template>
+  <div>
+  <Navbar mybook/>
   <div v-if="$store.state.login">
     <div v-if="sec.length === 0">
         <h4>No Sections Found</h4>
@@ -25,6 +27,7 @@
           </div>
     </div>
   </div>
+</div>
 </template>
 
 <script>

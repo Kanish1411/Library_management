@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Navbar />
+    <Navbar userdash bookpg/>
     <div class="page_header">
     <div class="page">
       <button @click="prev" class="btn btn-primary">Prev Page</button>

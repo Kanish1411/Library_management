@@ -7,7 +7,7 @@
       <div v-else>
         <div v-for="s in sec" :key="s.id" class="container-color">
           <h5 class="section-title">
-            {{ s.name }}            {{ s.date }}<br>
+            {{ s.name }}<br>
             {{ s.desc }}<br> 
           </h5>
           <div class="book" v-if="s.books.length > 0">

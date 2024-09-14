@@ -47,15 +47,24 @@
       <button class="btn btn-dark" onclick="dark()">Dark Mode</button>
     </div>
     <script>
-      document.body.className = 'gradient-background';
-      function gradient(){
+      window.onload = function() {
+        const mode = localStorage.getItem('backgroundMode');
+        if (mode) {
+          document.body.className = mode;
+        }
+      };
+      function gradient() {
         document.body.className = 'gradient-background';
+        localStorage.setItem('backgroundMode', 'gradient-background'); // Save the mode
       }
-      function light(){
+    
+      function light() {
         document.body.className = 'light-mode';
+        localStorage.setItem('backgroundMode', 'light-mode'); // Save the mode
       }
-      function dark(){
+      function dark() {
         document.body.className = 'dark-mode';
+        localStorage.setItem('backgroundMode', 'dark-mode'); // Save the mode
       }
     </script>
   </body>

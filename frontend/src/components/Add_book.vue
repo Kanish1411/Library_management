@@ -1,5 +1,5 @@
 <template>
- <div v-if="$store.state.login && $store.state.lib ">
+ <div v-if="$store.state.login && $store.state.lib "> 
     <Navbar libdash addsec/>
     <div class="container-color">
         <h2>Add  Book</h2>
@@ -9,10 +9,14 @@
             <input type="text" class="form-control" v-model="name" required>
             <label for="author">Author:</label>
             <input type="text" class="form-control" v-model="author" required>
-
+            <label for="section">Select Section:</label>
+            <select class="form-control" v-model="selectedSection" required>
+                <option v-for="section in sections" :key="section.id" :value="section.id">
+                    {{ section.name }}
+                </option>
+            </select>
             <label for="image">Upload Book Cover:</label>
             <input type="file"  class="form-control" @change="onFileChange('image', $event)" accept="image/*">
-
             <label for="content">Upload Book Content:</label>
             <input type="file" class="form-control" @change="onFileChange('content', $event)" accept=".txt,.pdf">
             <br>
@@ -35,30 +39,43 @@ export default {
             author: '',
             image: null,
             content: null,
+            selectedSection: "",
+            sections: []
         }
    },
    methods:{
     onFileChange(type, event) {
       const file = event.target.files[0];
       const reader = new FileReader();
-      
       reader.onload = (e) => {
         if (type === 'image') {
-          this.image = e.target.result.split(',')[1]; // base64 without the metadata
+          this.image = e.target.result.split(',')[1];
         } else if (type === 'content') {
           this.content = e.target.result.split(',')[1];
         }
       };
-
-      reader.readAsDataURL(file); // Reads file as a base64 encoded string
+      reader.readAsDataURL(file);
     },
+    fetchSections() {
+            axios.get('/sections',{
+              headers:{
+                Authorization:"Bearer "+localStorage.getItem("token")
+              }
+            }) .then(response => {
+                    this.sections = response.data;
+                })
+                .catch(error => {
+                    console.error('Error fetching sections:', error);
+                });
+        },
     submitBook() {
       const tk=localStorage.getItem("token");
       axios.post('/upload_book',{
         name: this.name,
         author: this.author,
         image: this.image,    
-        content: this.content
+        content: this.content,
+        section:this.selectedSection
       }, {
         headers: {
           Authorization:"Bearer "+tk,
@@ -76,6 +93,7 @@ export default {
    created(){
     checkLogin(this.$store, this.$router);
     checkLib(this.$store, this.$router);
+    this.fetchSections();
 },
 }
 </script>

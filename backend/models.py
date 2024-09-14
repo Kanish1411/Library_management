@@ -32,3 +32,10 @@ class Book(db.Model):
     image = db.Column(db.LargeBinary, nullable=True)
     content=db.Column(db.LargeBinary, nullable=True)
     available=db.Column(db.Boolean,default=True)
+
+class Requests(db.Model):
+    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+    req= db.Column(db.String(10), nullable=False)
+    user_id=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id=db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    accepted=db.Column(db.Boolean,default=False)

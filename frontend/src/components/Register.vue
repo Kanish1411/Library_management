@@ -49,9 +49,8 @@ export default {
               email:this.email
               });
               const msg = response.data.message;
-              if (msg=="registration Succesful"){
+              if (msg=="registration Successful"){
                 this.message=msg
-                
               }
               else
                 this.error=msg

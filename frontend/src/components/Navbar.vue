@@ -21,6 +21,15 @@
         <li class="nav-item active" v-if="libdash">
           <a class="nav-link active" href="/Librarian">Dashboard</a>
         </li>
+        <li class="nav-item active" v-if="userdash">
+          <a class="nav-link active" :href="`/User/${userId}`">Dashboard</a>
+        </li>
+        <li class="nav-item active" v-if="bookpg">
+          <a class="nav-link active" :href="`/get_book/${userId}/${bookId}`">Book Page</a>
+        </li>
+        <li class="nav-item active" v-if="mybook">
+          <a class="nav-link active" :href="`/User/${userId}`">My Books</a>
+        </li>
       </ul>
     </div>
   </div>
@@ -47,8 +56,27 @@ export default {
         type:Boolean,
         default:false
       },
-      
+      userdash:{
+        type:Boolean,
+        default:false
+      },
+      bookpg:{
+        type:Boolean,
+        default:false
+      },
+      mybook:{
+        type:Boolean,
+        default:false
+      },
     },
+    computed: {
+    userId() {
+      return this.$route.params.id;
+    },
+    bookId() {
+      return this.$route.params.book_id;
+    },
+    }
 }
 </script>
 

@@ -16,9 +16,7 @@
       </form>
       <div v-if="error" class="message error-message"><b>{{ error }}</b></div>
       <div v-if="message" class="message success-message">{{ message }}</div>
-    </div>
-    <div class="controls">
-  </div>    
+    </div>   
 </div>
 
 </template>
@@ -26,7 +24,6 @@
 <script>
 import axios from 'axios';
 import Navbar from './Navbar.vue';
-import Librarian from './Librarian.vue';
 
 export default {
     name:"login",
