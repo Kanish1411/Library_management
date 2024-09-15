@@ -28,7 +28,7 @@
           <a class="nav-link active" :href="`/get_book/${userId}/${bookId}`">Book Page</a>
         </li>
         <li class="nav-item active" v-if="mybook">
-          <a class="nav-link active" :href="`/User/${userId}`">My Books</a>
+          <a class="nav-link active" :href="`/mybooks/${userId}`">My Books</a>
         </li>
         <li class="nav-item active" v-if="requests">
           <a class="nav-link active" href="/Requests">Requests</a>

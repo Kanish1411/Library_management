@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="$store.state.login" >
     <Navbar userdash bookpg/>
     <div class="page_header">
     <div class="page">
@@ -25,6 +25,7 @@
 <script>
 import axios from "axios";
 import Navbar from "./Navbar.vue";
+import { checkLogin } from '../auth';
 export default {
   data() {
     return {
@@ -71,6 +72,7 @@ export default {
     }
   },
   mounted() {
+    checkLogin(this.$store, this.$router);
     const book_id = this.$route.params.book_id;
     this.fetchBookPage(book_id, this.pg);
   }
