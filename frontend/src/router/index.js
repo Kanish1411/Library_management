@@ -9,6 +9,7 @@ import Add_book from '@/components/Add_book.vue'
 import User from '@/components/user.vue'
 import Read_book from '@/components/Read_book.vue'
 import Get_book from '@/components/Get_book.vue'
+import Requests from '@/components/Requests.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -62,6 +63,11 @@ const router = createRouter({
       name:"get_book",
       component:Get_book,
       path:"/get_book/:id/:book_id"
+    },
+    {
+      name:"Requests",
+      component:Requests,
+      path:"/Requests"
     }
   ]
 })

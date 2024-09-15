@@ -60,9 +60,6 @@ export default {
           console.log(error);
       }
       },
-      async RequestPDF(){
-        console.log("jkadhakah")
-      }
     },
     created(){
         checkLogin(this.$store, this.$router);

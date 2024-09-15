@@ -10,7 +10,6 @@ from models import Book, db, User, Role, Section,Requests
 # from worker import celery_init_app
 from tasks import send_email_task, send_pdf_task
 from io import BytesIO
-
 import fitz
 
 app = Flask(__name__)
@@ -115,9 +114,14 @@ def change_pwd():
 def fetch_lib():
     sections = Section.query.all()
     section_list = []
+    cu = get_jwt_identity()
     for section in sections:
         books = []
-        b=Book.query.filter_by(sec_id=section.id,available=True).all()
+        us=User.query.filter_by(id=cu).first().role
+        if us==3:
+            b=Book.query.filter_by(sec_id=section.id,available=True).all()
+        else:
+            b=Book.query.filter_by(sec_id=section.id).all()
         for book in b: 
             image_base64 = base64.b64encode(book.image).decode('utf-8')
             books.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64})
@@ -171,7 +175,6 @@ def Delete_book():
 
 @app.route("/fetch_bk_det",methods=["POST"])
 def fetch_bk_det():
-    print(request.get_json().get("bk_id"))
     book=Book.query.filter_by(id=request.get_json().get("bk_id")).first()
     l=[]
     if book:
@@ -212,11 +215,21 @@ def request_book():
         db.session.commit()
         return {"msg":"Book PDF request Sent"}
     return {"err":"Already Requested"}
-    #--------------------------
-    # send_pdf_task(u.email, f'Book requested {bk.name}',
-    #               f'The Book {bk.name} written by {bk.Author} is now for u to download and enjoy!! \n Only at Rs: 199 \n Please Complete The payment process',
-    #               bk.content, bk.name+".pdf")
-    
+
+@app.route("/req_fetch",methods=["GET"])
+def req_fetch():
+    r=Requests.query.filter_by(accepted=0).all()
+    l=[]
+    l2=[]
+    for i in r:
+        u=User.query.filter_by(id=i.user_id).first()
+        b=Book.query.filter_by(id=i.book_id).first()
+        if i.req=="pdf":
+            l2.append({"id":i.id,"type":i.req,"name":u.name,"Book":b.name})
+        else:
+            l.append({"id":i.id,"type":i.req,"name":u.name,"Book":b.name})
+    return {"Req_get":l,"Req_pdf":l2}
+
 @app.route("/get_book",methods=["POST"])
 def get_book():
     v=request.get_json()
@@ -228,6 +241,33 @@ def get_book():
         return {"msg":"Request Successful"}
     return {"err":"Already Requested"}
 
+@app.route("/acceptreq",methods=["POST"])
+@auth("Librarian")
+def acceptReq():
+    v=request.get_json()
+    r=Requests.query.filter_by(id=v.get("id")).first()
+    bk=Book.query.filter_by(id=r.book_id).first()
+    if v.get("req")["type"]== "pdf":
+        u=User.query.filter_by(id=r.user_id).first()
+        db.session.delete(r)
+        db.session.commit()
+        send_pdf_task(u.email, f'Book requested {bk.name}',
+                  f'The Book {bk.name} written by {bk.Author} is now for u to download and enjoy!! \n Only at Rs: 199 \n Please Complete The payment process',
+                  bk.content, bk.name+".pdf")   
+    else:
+        r.accepted=True
+        bk.available=False
+        db.session.commit()
+    return {}
+
+@app.route("/rejectreq",methods=["POST"])
+@auth("Librarian")
+def rejectReq():
+    v=request.get_json()
+    r=Requests.query.filter_by(id=v.get("id")).first()
+    db.session.delete(r)
+    db.session.commit()
+    return {}
 
 if __name__ == "__main__":
     with app.app_context():

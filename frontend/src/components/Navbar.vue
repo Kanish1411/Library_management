@@ -30,6 +30,9 @@
         <li class="nav-item active" v-if="mybook">
           <a class="nav-link active" :href="`/User/${userId}`">My Books</a>
         </li>
+        <li class="nav-item active" v-if="requests">
+          <a class="nav-link active" href="/Requests">Requests</a>
+        </li>
       </ul>
     </div>
   </div>
@@ -68,6 +71,10 @@ export default {
         type:Boolean,
         default:false
       },
+      requests:{
+        type:Boolean,
+        default:false
+      }
     },
     computed: {
     userId() {

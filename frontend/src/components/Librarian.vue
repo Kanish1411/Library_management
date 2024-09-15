@@ -1,6 +1,6 @@
 <template>
     <div v-if="$store.state.login && $store.state.lib">
-      <Navbar addsec addbook />
+      <Navbar addsec addbook requests/>
       <div v-if="sec.length === 0">
         <h4>No Sections Found</h4>
       </div>
