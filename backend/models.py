@@ -39,3 +39,10 @@ class Requests(db.Model):
     user_id=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id=db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     accepted=db.Column(db.Boolean,default=False)
+
+class Lendings(db.Model):
+    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id=db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    req_id=db.Column(db.Integer, db.ForeignKey('requests.id'), nullable=False)
+    time_left=db.Column(db.DateTime, nullable=False)

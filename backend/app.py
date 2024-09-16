@@ -1,12 +1,12 @@
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from flask import Flask,  jsonify, make_response, request
 from flask_cors import CORS
 import hashlib, random
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Book, db, User, Role, Section,Requests
+from models import Book, Lendings, db, User, Role, Section,Requests
 # from worker import celery_init_app
 from tasks import send_email_task, send_pdf_task
 from io import BytesIO
@@ -255,8 +255,13 @@ def acceptReq():
                   f'The Book {bk.name} written by {bk.Author} is now for u to download and enjoy!! \n Only at Rs: 199 \n Please Complete The payment process',
                   bk.content, bk.name+".pdf")   
     else:
+        days_part, time_part=datetime.now()+timedelta(days=7).split(",")
+        d = int(days_part.split()[0])
+        h = int(time_part.split(':')[0])
+        l=Lendings(user_id=r.user_id,book_id=r.book_id,req_id=r.id,time_left=f"{d} days, {h} hours")
         r.accepted=True
         bk.available=False
+        db.session.add(l)
         db.session.commit()
     return {}
 
@@ -268,6 +273,19 @@ def rejectReq():
     db.session.delete(r)
     db.session.commit()
     return {}
+
+@app.route("/mybooks",methods=["POST"])
+def fetch_mybooks():
+    v=request.get_json()
+    print(v.get("id"))
+    l1=Lendings.query.filter_by(user_id=v.get("id")).all()
+    l=[]
+    for i in l1:
+        book=Book.query.filter_by(id=i.book_id).first()
+        if book:
+            image_base64 = base64.b64encode(book.image).decode('utf-8')
+            l.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64,"timeleft":str(i.time_left-datetime.now())})
+    return {"l":l}
 
 if __name__ == "__main__":
     with app.app_context():
