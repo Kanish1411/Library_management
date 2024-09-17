@@ -301,7 +301,9 @@ def fetch_mybooks():
         book=Book.query.filter_by(id=i.book_id).first()
         if book:
             image_base64 = base64.b64encode(book.image).decode('utf-8')
-            l.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64,"timeleft":str(i.time_left-datetime.now())})
+            print(i.timeleft<datetime.now(),i.timeleft,datetime.now())
+            if(i.timeleft<datetime.now()):
+                l.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64,"timeleft":str(i.time_left-datetime.now())})
     return {"l":l}
 
 @app.route("/return_bk",methods=["POST"])
@@ -384,6 +386,8 @@ def fetch_lend():
 def revoke():
     v=request.get_json()
     l=Lendings.query.filter_by(id=v.get("id")).first()
+    bk=Book.query.filter_by(id=l.book_id).first()
+    bk.available=True
     db.session.delete(l)
     db.session.commit()
     return {}
