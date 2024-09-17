@@ -1,8 +1,8 @@
 <template>
     <div v-if="$store.state.login && $store.state.lib">
+      <Navbar libdash/>
       <div class="container-color">
         <div class="row">
-          <!-- Request Section -->
           <div class="col-md-6">
             <h3>Requests</h3>
             <div v-for="req in req_get" :key="req.id" class="request-item">
@@ -11,8 +11,6 @@
               <button class="btn btn-danger" @click="rejectRequest(req,req.id)">Reject</button>
             </div>
           </div>
-  
-          <!-- PDF Section -->
           <div class="col-md-6">
             <h3>PDF Requests</h3>
             <div v-for="pdf in req_pdf" :key="pdf.id" class="pdf-item">
@@ -57,9 +55,9 @@
           console.log(error);
         }
       },
-      acceptRequest(request,id) {
+      async acceptRequest(request,id) {
         console.log('Accepted:', id);
-        const resp=axios.post("/acceptreq",{
+        const resp=await axios.post("/acceptreq",{
             id:id,
             req:request,
         },{

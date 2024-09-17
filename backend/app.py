@@ -135,7 +135,7 @@ def sections():
     s=Section.query.all()
     print(s)
     for i in s:
-        l.append({"name":i.name,"id":i.id})
+        l.append({"name":i.name,"id":i.id,"desc":i.desc,"date":i.date_created.strftime("%Y-%m-%d")})
     return l
 
 @app.route("/add_sec",methods=["POST"])
@@ -144,6 +144,17 @@ def Add_section():
     v=request.get_json()
     s=Section(name=v.get("name"),date_created=datetime.strptime(v.get("date"), "%Y-%m-%d").date(),desc=v.get("desc"))
     db.session.add(s)
+    db.session.commit()
+    return {"msg":"Done"}
+
+@app.route("/update_sec",methods=["POST"])
+@auth("Librarian")
+def Update_sec():
+    v=request.get_json()
+    s=Section.query.filter_by(id=v.get("id")).first()
+    s.name=v.get("name")
+    s.date_created=datetime.strptime(v.get("date"), "%Y-%m-%d").date()
+    s.desc=v.get("desc")
     db.session.commit()
     return {"msg":"Done"}
 
@@ -171,6 +182,13 @@ def Delete_book():
     if b:
         db.session.delete(b)
         db.session.commit()
+        l=Lendings.query.filter_by(book_id=b.id).first()
+        if l!=None:
+            db.session.delete(l)
+        r=Requests.query.filter_by(book_id=b.id).all()
+        if r!=None:
+            for j in r:
+                db.session.delete(j)
     return {"msg":"deleted"}
 
 @app.route("/fetch_bk_det",methods=["POST"])
@@ -239,6 +257,8 @@ def get_book():
         db.session.add(r)
         db.session.commit()
         return {"msg":"Request Successful"}
+    if r.accepted:
+        return {"msg":"Book request accepted Already"}
     return {"err":"Already Requested"}
 
 @app.route("/acceptreq",methods=["POST"])
@@ -255,10 +275,7 @@ def acceptReq():
                   f'The Book {bk.name} written by {bk.Author} is now for u to download and enjoy!! \n Only at Rs: 199 \n Please Complete The payment process',
                   bk.content, bk.name+".pdf")   
     else:
-        days_part, time_part=datetime.now()+timedelta(days=7).split(",")
-        d = int(days_part.split()[0])
-        h = int(time_part.split(':')[0])
-        l=Lendings(user_id=r.user_id,book_id=r.book_id,req_id=r.id,time_left=f"{d} days, {h} hours")
+        l=Lendings(user_id=r.user_id,book_id=r.book_id,req_id=r.id,time_left=datetime.now()+timedelta(days=7))
         r.accepted=True
         bk.available=False
         db.session.add(l)
@@ -286,6 +303,90 @@ def fetch_mybooks():
             image_base64 = base64.b64encode(book.image).decode('utf-8')
             l.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64,"timeleft":str(i.time_left-datetime.now())})
     return {"l":l}
+
+@app.route("/return_bk",methods=["POST"])
+def ret_bk():
+    l=Lendings.query.filter_by(book_id=request.get_json().get("bk_id")).first()
+    db.session.delete(l)
+    bk=Book.query.filter_by(id=request.get_json().get("bk_id")).first()
+    bk.available=True
+    db.session.commit()
+    return {}
+
+@app.route("/delete_sec",methods=["POST"])
+@auth("Librarian")
+def delete_sec():
+    v=request.get_json()
+    sec=Section.query.filter_by(id=v.get("id")).first()
+    bk=Book.query.filter_by(sec_id=sec.id).all()
+    for i in bk:
+        l=Lendings.query.filter_by(book_id=i.id).first()
+        if l!=None:
+            db.session.delete(l)
+        r=Requests.query.filter_by(book_id=i.id).all()
+        if r!=None:
+            for j in r:
+                db.session.delete(j)
+        db.session.delete(i)
+    db.session.delete(sec)
+    db.session.commit()
+    return {}
+
+@app.route("/update_book", methods=["POST"])
+@auth("Librarian")
+def update_book():
+    v = request.get_json()
+    book = Book.query.get(v.get("id"))
+    l=Lendings.query.filter_by(book_id=book.id).first()
+    if l!=None:
+            db.session.delete(l)
+    r=Requests.query.filter_by(book_id=book.id).all()
+    if r!=None:
+            for j in r:
+                db.session.delete(j)
+    book.name = v.get('name')
+    book.Author = v.get('author')
+    book.sec_id =v.get("section")
+    image_base64 = v.get('image')
+    content_base64 = v.get('content')
+    if image_base64!=None:
+        image_bytes = base64.b64decode(image_base64)
+        book.image = image_bytes
+    if content_base64!=None:
+        content_bytes = base64.b64decode(content_base64)
+        book.content = content_bytes
+    db.session.commit()
+    return jsonify({})
+
+@app.route("/fetch_book/<int:book_id>", methods=["GET"])
+@auth("Librarian")
+def fetch_book(book_id):
+    book = Book.query.get(book_id)
+    book_data = {
+        'name': book.name,
+        'author': book.Author,
+        'section_id': book.sec_id,
+    }
+    return jsonify(book_data)
+
+@app.route("/fetch_l",methods=["GET"])
+@auth("Librarian")
+def fetch_lend():
+    le=Lendings.query.all()
+    l=[]
+    for i in le:
+        u=User.query.filter_by(id=i.user_id).first()
+        b=Book.query.filter_by(id=i.book_id).first()
+        l.append({"id":i.id,"name":u.name,"bk_name":b.name,"time":str(i.time_left-datetime.now())})
+    return {"l":l}
+
+@app.route("/revoke",methods=["PUT"])
+def revoke():
+    v=request.get_json()
+    l=Lendings.query.filter_by(id=v.get("id")).first()
+    db.session.delete(l)
+    db.session.commit()
+    return {}
 
 if __name__ == "__main__":
     with app.app_context():

@@ -33,6 +33,9 @@
         <li class="nav-item active" v-if="requests">
           <a class="nav-link active" href="/Requests">Requests</a>
         </li>
+        <li class="nav-item active" v-if="lend">
+          <a class="nav-link active" href="/Lendings">Lendings</a>
+        </li>
       </ul>
     </div>
   </div>
@@ -72,6 +75,10 @@ export default {
         default:false
       },
       requests:{
+        type:Boolean,
+        default:false
+      },
+      lend:{
         type:Boolean,
         default:false
       }

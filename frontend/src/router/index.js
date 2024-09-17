@@ -11,6 +11,9 @@ import Read_book from '@/components/Read_book.vue'
 import Get_book from '@/components/Get_book.vue'
 import Requests from '@/components/Requests.vue'
 import My_books from '@/components/my_books.vue'
+import Update_sec from '@/components/Update_sec.vue'
+import Update_book from '@/components/Update_book.vue'
+import Lendings from '@/components/Lendings.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -74,6 +77,19 @@ const router = createRouter({
       path:"/mybooks/:id",
       component:My_books
     },
+    {
+      path:"/update_sec/:id",
+      component:Update_sec
+    },
+    {
+      path:"/update_bk/:id",
+      component:Update_book
+    },
+    {
+      path:"/Lendings",
+      component:Lendings
+    }
+
   ]
 })
 

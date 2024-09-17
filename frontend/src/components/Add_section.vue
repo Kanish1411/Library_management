@@ -46,7 +46,6 @@ export default {
                     }})
             this.$router.push("/librarian")
         }
-
     },
     created(){
         checkLogin(this.$store, this.$router);

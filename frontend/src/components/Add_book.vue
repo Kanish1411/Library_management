@@ -16,9 +16,9 @@
                 </option>
             </select>
             <label for="image">Upload Book Cover:</label>
-            <input type="file"  class="form-control" @change="onFileChange('image', $event)" accept="image/*">
+            <input type="file"  class="form-control" @change="onFileChange('image', $event)" accept="image/*" required>
             <label for="content">Upload Book Content:</label>
-            <input type="file" class="form-control" @change="onFileChange('content', $event)" accept=".txt,.pdf">
+            <input type="file" class="form-control" @change="onFileChange('content', $event)" accept=".txt,.pdf" required>
             <br>
             <button class="btn btn-primary" type="submit">Submit</button>
         </form>

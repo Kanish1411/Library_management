@@ -1,6 +1,6 @@
 <template>
     <div v-if="$store.state.login && $store.state.lib">
-      <Navbar addsec addbook requests/>
+      <Navbar addsec addbook requests lend/>
       <div v-if="sec.length === 0">
         <h4>No Sections Found</h4>
       </div>
@@ -20,7 +20,7 @@
                 alt="Book Cover" 
                 class="book-image"/>
               <div class="buttons">
-                  <button class="btn btn-primary">Update</button> <br>
+                  <button class="btn btn-primary" @click="this.$router.push(`/update_bk/${b.id}`)">Update</button> <br>
                   <button class="btn btn-danger" @click="del(b.id)">Delete</button>
               </div> 
               <!-- <a 
@@ -35,6 +35,8 @@
           <div v-else>
             No Books Found
           </div>
+          <button class="btn btn-primary" @click="$router.push({ path: `/update_sec/${s.id}` })"> Update</button> {{ }}
+          <button class="btn btn-danger" @click="delete_sec(s.id)"> Delete</button>
         </div>
       </div>
     </div>
@@ -70,8 +72,9 @@ export default {
     }
     },
     async del(id){
-      const tk = localStorage.getItem("token")  
-      const resp=await axios.post("/delete_book",{
+      if (window.confirm("Are you sure you want to delete this Book? (Leads to deletion of all Lendingfs and requests)")) {
+      const tk = localStorage.getItem("token") 
+      await axios.post("/delete_book",{
         id:id,
       },{
       headers:{
@@ -79,6 +82,19 @@ export default {
       }})
       window.location.reload();
     }
+    },
+    delete_sec(id){
+      if (window.confirm("Are you sure you want to delete this section? (Leads to deletion of all books in thius section)")) {
+      axios.post("/delete_sec",{
+        id:id
+      },{
+        headers:{
+          Authorization:"Bearer "+localStorage.getItem("token"),
+        }
+      })
+      window.location.reload();
+    }
+    },
    },
    created(){
     checkLogin(this.$store, this.$router);
