@@ -301,8 +301,10 @@ def fetch_mybooks():
         book=Book.query.filter_by(id=i.book_id).first()
         if book:
             image_base64 = base64.b64encode(book.image).decode('utf-8')
-            print(i.timeleft<datetime.now(),i.timeleft,datetime.now())
-            if(i.timeleft<datetime.now()):
+            if(i.time_left<datetime.now()):
+                db.session.delete(i)
+                db.session.commit()
+            if(i.time_left>datetime.now()):
                 l.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64,"timeleft":str(i.time_left-datetime.now())})
     return {"l":l}
 
