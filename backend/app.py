@@ -2,6 +2,7 @@ import base64
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import Flask,  jsonify, make_response, request
+from flask_caching import Cache
 from flask_cors import CORS
 import hashlib, random
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
@@ -15,6 +16,8 @@ import fitz
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///DB.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+cache=Cache(config={"CACHE_TYPE":"RedisCache","CACHE_REDIS_HOST":"127.0.0.1","CACHE_REDIS_PORT":6379})
+cache.init_app(app)
 # celery = celery_init_app(app)
 db.init_app(app)
 CORS(app)
@@ -36,6 +39,7 @@ def auth(role):
         return decorator
     return wrapper
 
+# @cache.cached(timeout=60)
 @app.route("/checkLogin",methods=["GET"])
 @jwt_required()
 def checkLogin():
@@ -47,6 +51,7 @@ def checkLogin():
             return {"msg":"Valid"}
     return {"msg": "Invalid"}
 
+# @cache.cached(timeout=60)
 @app.route("/checkLib",methods=["GET"])
 @jwt_required()
 def checkLib():
@@ -58,7 +63,7 @@ def checkLib():
             return {"msg":"Valid"}
     return {"msg": "Invalid"}
 
-
+# @cache.cached(timeout=60)
 @app.route("/login", methods=["POST"])
 def login():
     req = request.get_json()
@@ -227,9 +232,6 @@ def request_book():
     u=User.query.filter_by(id=v.get("id")).first()
     bk=Book.query.filter_by(id=v.get("bk_id")).first()
     r=Requests.query.filter_by(req="pdf",user_id=v.get("id"),book_id=v.get("bk_id")).first()
-    r1=Requests.query.filter_by(id=v.get("id")).all()
-    if  r1!=None and len(r1)>5:
-        return {"err":"Requested 5 books already"}
     if r == None:
         r=Requests(req="pdf",user_id=v.get("id"),book_id=v.get("bk_id"))
         db.session.add(r)
@@ -255,6 +257,10 @@ def req_fetch():
 def get_book():
     v=request.get_json()
     r=Requests.query.filter_by(req="Book",user_id=v.get("id"),book_id=v.get("bk_id")).first()
+    r1=Requests.query.filter_by(user_id=v.get("id")).all()
+    print(r1)
+    if  r1!=None and len(r1)>4:
+        return {"err":"Requested 5 books already"}
     if r == None:
         r=Requests(req="Book",user_id=v.get("id"),book_id=v.get("bk_id"))
         db.session.add(r)
