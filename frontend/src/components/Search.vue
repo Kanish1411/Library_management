@@ -2,10 +2,11 @@
     <div>
     <Navbar userdash/>
     <div v-if="$store.state.login">
-      <!-- <form>
-        <label>Search</label>
-        <input class="form-control" type="text">
-      </form> -->
+      <form  @submit.prevent="search">
+        <label for="query">Search</label>
+        <input class="form-control" v-model="query"  type="text">
+        <button class="btn btn-primary" type="submit">Search</button>
+      </form>
       <div v-if="sec.length === 0">
           <h4>No Sections Found</h4>
       </div>
@@ -52,7 +53,11 @@
       },
       methods:{   
         async search(){
-              
+          const r=await axios.post("/search",{
+            query:this.query
+          })
+          this.sec=r.data.l;
+          console.log(this.sec);
         },
       },
       created(){

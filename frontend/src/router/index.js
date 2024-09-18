@@ -16,7 +16,6 @@ import Update_book from '@/components/Update_book.vue'
 import Lendings from '@/components/Lendings.vue'
 import Search from '@/components/Search.vue'
 
-
 const router = createRouter({
   history: createWebHistory(),
   routes: [

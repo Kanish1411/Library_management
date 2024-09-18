@@ -394,6 +394,43 @@ def revoke():
     db.session.commit()
     return {}
 
+@app.route("/search",methods=["POST"])
+def search():
+    v=request.get_json()
+    q=v.get("query")
+    b=Book.query.filter(Book.name.like(f"%{q}%"),Book.available.is_(True)).all()
+    l=[]
+    sec=[]
+    if b!=[]:
+        for i in b:
+            image_base64 = base64.b64encode(i.image).decode('utf-8')
+            l.append({"s_id":i.sec_id,"name":i.name,"author":i.Author,"image": image_base64})
+    b=Book.query.filter(Book.Author.like(f"%{q}%"),Book.available.is_(True)).all()
+    if b!=[]:
+        for i in b:
+            image_base64 = base64.b64encode(i.image).decode('utf-8')
+            if ({"s_id":i.sec_id,"name":i.name,"author":i.Author,"image": image_base64} not in l):
+                l.append({"s_id":i.sec_id,"name":i.name,"author":i.Author,"image": image_base64})
+    if l==[]:
+        s=Section.query.filter(Section.name.like(f"%{q}%")).all()
+        for section in s:
+            bk= []
+            b=Book.query.filter_by(sec_id=section.id,available=True).all()
+            for book in b: 
+                image_base64 = base64.b64encode(book.image).decode('utf-8')
+                bk.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64})
+            sec.append({"id": section.id,"name": section.name,"desc": section.desc,"date": section.date_created,"books": bk})
+    s2={}
+    for i in l:
+        if i["s_id"] in s2:
+            s2[i["s_id"]].append(i)
+        else:
+            s2[i["s_id"]]=[i]
+    for i in s2:
+        section=Section.query.filter_by(id=i).first()
+        sec.append({"id": section.id,"name": section.name,"desc": section.desc,"date": section.date_created,"books": s2[i]})
+    return {"l":sec}
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
