@@ -227,6 +227,9 @@ def request_book():
     u=User.query.filter_by(id=v.get("id")).first()
     bk=Book.query.filter_by(id=v.get("bk_id")).first()
     r=Requests.query.filter_by(req="pdf",user_id=v.get("id"),book_id=v.get("bk_id")).first()
+    r1=Requests.query.filter_by(id=v.get("id")).all()
+    if  r1!=None and len(r1)>5:
+        return {"err":"Requested 5 books already"}
     if r == None:
         r=Requests(req="pdf",user_id=v.get("id"),book_id=v.get("bk_id"))
         db.session.add(r)
@@ -398,9 +401,19 @@ def revoke():
 def search():
     v=request.get_json()
     q=v.get("query")
-    b=Book.query.filter(Book.name.like(f"%{q}%"),Book.available.is_(True)).all()
     l=[]
     sec=[]
+    if "Section:" in q:
+        u=q.split(" ")[1]
+        s=Section.query.filter(Section.name.like(f"%{u}%")).all()
+        for section in s:
+            bk= []
+            b=Book.query.filter_by(sec_id=section.id,available=True).all()
+            for book in b: 
+                image_base64 = base64.b64encode(book.image).decode('utf-8')
+                bk.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64})
+            sec.append({"id": section.id,"name": section.name,"desc": section.desc,"date": section.date_created,"books": bk})
+    b=Book.query.filter(Book.name.like(f"%{q}%"),Book.available.is_(True)).all()
     if b!=[]:
         for i in b:
             image_base64 = base64.b64encode(i.image).decode('utf-8')
