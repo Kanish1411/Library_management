@@ -14,6 +14,8 @@ import My_books from '@/components/my_books.vue'
 import Update_sec from '@/components/Update_sec.vue'
 import Update_book from '@/components/Update_book.vue'
 import Lendings from '@/components/Lendings.vue'
+import Search from '@/components/Search.vue'
+
 
 const router = createRouter({
   history: createWebHistory(),
@@ -88,8 +90,11 @@ const router = createRouter({
     {
       path:"/Lendings",
       component:Lendings
-    }
-
+    },
+    {
+      path:"/search/:id",
+      component:Search
+    },
   ]
 })
 

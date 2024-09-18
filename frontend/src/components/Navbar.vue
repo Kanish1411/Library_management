@@ -36,6 +36,9 @@
         <li class="nav-item active" v-if="lend">
           <a class="nav-link active" href="/Lendings">Lendings</a>
         </li>
+        <li class="nav-item active" v-if="search">
+          <a class="nav-link active" :href="`/search/${userId}`">Search</a>
+        </li>
       </ul>
     </div>
   </div>
@@ -81,7 +84,11 @@ export default {
       lend:{
         type:Boolean,
         default:false
-      }
+      },
+      search:{
+        type:Boolean,
+        default:false
+      },
     },
     computed: {
     userId() {

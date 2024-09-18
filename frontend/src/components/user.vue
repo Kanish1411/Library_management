@@ -1,6 +1,6 @@
 <template>
   <div>
-  <Navbar mybook/>
+  <Navbar mybook search/>
   <div v-if="$store.state.login">
     <div v-if="sec.length === 0">
         <h4>No Sections Found</h4>
