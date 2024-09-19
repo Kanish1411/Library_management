@@ -1,33 +1,23 @@
 <template>
-  <div>
-  <Navbar mybook search/>
   <div v-if="$store.state.login">
-    <div v-if="sec.length === 0">
-        <h4>No Sections Found</h4>
-    </div>
-    <div v-else>
-        <div v-for="s in sec" :key="s.id" class="container-color">
-          <h5 class="section-title">
-            {{ s.name }}<br>
-            {{ s.desc }}<br> 
-          </h5>
-          <div class="book" v-if="s.books.length > 0">
-            <div v-for="b in s.books" :key="b.id" class="book-container">
+    <Navbar mybook search/>
+    <div class="container-color">
+    <h3>
+    {{ name }}
+  </h3>
+  <div v-if="l.length===0">
+    No Books lended
+  </div>
+  <div v-else>
+    <div v-for="b in l" :key="b.id" class="book-container">
               <h6>{{ b.name }}</h6>
               <p>Author(s): {{ b.author }}</p>
+              <h6><strong>Time remaining:</strong>{{ b.time }}</h6>
               <img v-if="b.image" :src="'data:image/jpeg;base64,' + b.image" alt="Book Cover"  class="book-image"/>
-              <div class="buttons">
-                <button class="btn btn-primary" @click="$router.push({ path:`/get_book/${this.idu}/${b.id}`})">GET</button><br>
-              </div> 
-            </div>
-          </div>
-          <div v-else>
-            No Books Found
-          </div>
-          </div>
+    </div>
+    </div>
     </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -41,20 +31,22 @@ export default {
     },
     data(){
         return{
-            sec:[],
+            l:[],
             idu:0,
+            name:""
         }
     },
     methods:{   
       async fetch(){
             try{
             let tk=localStorage.getItem("token");
-            const resp=await axios.get("/Lib_fetch",{
+            const resp=await axios.get(`/user_fetch/${this.idu}`,{
             headers:{
                 Authorization:"Bearer "+tk,
                 }
             })
-            this.sec=resp.data.Section;
+            this.l=resp.data.l;
+            this.name=resp.data.name;
       }
       catch (error){
           console.log(error);
@@ -63,8 +55,9 @@ export default {
     },
     created(){
         checkLogin(this.$store, this.$router);
-        this.fetch();
         this.idu=this.$route.params.id;
+        this.fetch();
+        
     },
 }
 </script>

@@ -46,3 +46,12 @@ class Lendings(db.Model):
     book_id=db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     req_id=db.Column(db.Integer, db.ForeignKey('requests.id'), nullable=False)
     time_left=db.Column(db.DateTime, nullable=False)
+
+class Reads(db.Model):
+    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+    sec_id=db.Column(db.Integer, db.ForeignKey('user.id'))
+    reads=db.Column(db.Integer,default=0)
+    pg_read=db.Column(db.Integer,default=0)
+    pdfs=db.Column(db.Integer,default=0)
+    lends=db.Column(db.Integer,default=0)
+    

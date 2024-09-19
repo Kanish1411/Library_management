@@ -7,7 +7,7 @@ from flask_cors import CORS
 import hashlib, random
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Book, Lendings, db, User, Role, Section,Requests
+from models import Book, Lendings, Reads, db, User, Role, Section,Requests
 # from worker import celery_init_app
 from tasks import send_email_task, send_pdf_task
 from io import BytesIO
@@ -16,8 +16,8 @@ import fitz
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///DB.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-cache=Cache(config={"CACHE_TYPE":"RedisCache","CACHE_REDIS_HOST":"127.0.0.1","CACHE_REDIS_PORT":6379})
-cache.init_app(app)
+# cache=Cache(config={"CACHE_TYPE":"RedisCache","CACHE_REDIS_HOST":"127.0.0.1","CACHE_REDIS_PORT":6379})
+# cache.init_app(app)
 # celery = celery_init_app(app)
 db.init_app(app)
 CORS(app)
@@ -150,6 +150,9 @@ def Add_section():
     s=Section(name=v.get("name"),date_created=datetime.strptime(v.get("date"), "%Y-%m-%d").date(),desc=v.get("desc"))
     db.session.add(s)
     db.session.commit()
+    r=Reads(sec_id=Section.query.filter_by(name=v.get("name")).first().id)
+    db.session.add(r)
+    db.session.commit()
     return {"msg":"Done"}
 
 @app.route("/update_sec",methods=["POST"])
@@ -209,6 +212,9 @@ def fetch_bk_det():
 @app.route('/book/<int:book_id>/<int:page_no>', methods=['GET'])
 def get_book_page(book_id, page_no=0):
     book = Book.query.filter_by(id=book_id).first()
+    r=Reads.query.filter_by(sec_id=book.sec_id).first()
+    r.pg_read+=1
+    db.commit()
     if book and book.content:
         try:
             pdf_stream = BytesIO(book.content)
@@ -229,11 +235,12 @@ def get_book_page(book_id, page_no=0):
 @app.route("/request_book",methods=["POST"])
 def request_book():
     v=request.get_json()
-    u=User.query.filter_by(id=v.get("id")).first()
     bk=Book.query.filter_by(id=v.get("bk_id")).first()
     r=Requests.query.filter_by(req="pdf",user_id=v.get("id"),book_id=v.get("bk_id")).first()
     if r == None:
         r=Requests(req="pdf",user_id=v.get("id"),book_id=v.get("bk_id"))
+        r1=Reads.query.filter_by(sec_id=bk.sec_id).first()
+        r1.pdfs+=1
         db.session.add(r)
         db.session.commit()
         return {"msg":"Book PDF request Sent"}
@@ -423,12 +430,12 @@ def search():
     if b!=[]:
         for i in b:
             image_base64 = base64.b64encode(i.image).decode('utf-8')
-            l.append({"s_id":i.sec_id,"name":i.name,"author":i.Author,"image": image_base64})
+            l.append({"id": i.id,"s_id":i.sec_id,"name":i.name,"author":i.Author,"image": image_base64})
     b=Book.query.filter(Book.Author.like(f"%{q}%"),Book.available.is_(True)).all()
     if b!=[]:
         for i in b:
             image_base64 = base64.b64encode(i.image).decode('utf-8')
-            if ({"s_id":i.sec_id,"name":i.name,"author":i.Author,"image": image_base64} not in l):
+            if ({"id": i.id,"s_id":i.sec_id,"name":i.name,"author":i.Author,"image": image_base64} not in l):
                 l.append({"s_id":i.sec_id,"name":i.name,"author":i.Author,"image": image_base64})
     if l==[]:
         s=Section.query.filter(Section.name.like(f"%{q}%")).all()
@@ -449,6 +456,17 @@ def search():
         section=Section.query.filter_by(id=i).first()
         sec.append({"id": section.id,"name": section.name,"desc": section.desc,"date": section.date_created,"books": s2[i]})
     return {"l":sec}
+
+@app.route("/user_fetch/<int:id>",methods=["GET"])
+def user_fetch(id):
+    u=User.query.filter_by(id=id).first()
+    le=Lendings.query.filter_by(user_id=id).all()
+    l=[]
+    for i in le:
+        b=Book.query.filter_by(id=i.book_id).first()
+        image_base64 = base64.b64encode(b.image).decode('utf-8')
+        l.append({"id":i.id,"bk_name":b.name,"time":str(i.time_left-datetime.now()),"author": b.Author,"image": image_base64})
+    return{"name":u.name,'l':l}
 
 if __name__ == "__main__":
     with app.app_context():
