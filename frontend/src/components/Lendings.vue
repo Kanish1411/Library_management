@@ -1,5 +1,5 @@
 <template>
-    <div v-if="$store.state.login && $store.state.lib ">
+    <div v-if="$store.state.login && $store.state.lib">
         <Navbar libdash/>
         <div v-if="l">
             <div v-for="i in l" :key="i.id" class="book-container">

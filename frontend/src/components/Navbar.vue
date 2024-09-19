@@ -39,6 +39,9 @@
         <li class="nav-item active" v-if="search">
           <a class="nav-link active" :href="`/search/${userId}`">Search</a>
         </li>
+        <li class="nav-item active" v-if="chart">
+          <a class="nav-link active" :href="`/chart`">Charts</a>
+        </li>
       </ul>
     </div>
   </div>
@@ -86,6 +89,10 @@ export default {
         default:false
       },
       search:{
+        type:Boolean,
+        default:false
+      },
+      chart:{
         type:Boolean,
         default:false
       },

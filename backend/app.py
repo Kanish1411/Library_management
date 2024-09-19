@@ -63,6 +63,17 @@ def checkLib():
             return {"msg":"Valid"}
     return {"msg": "Invalid"}
 
+@app.route("/checkAd",methods=["GET"])
+@jwt_required()
+def checkAd():
+    tk=request.headers.get("Authorization")
+    tk=tk.split(" ")[1]
+    u=User.query.filter_by(id=get_jwt_identity()).all()
+    for i in u: 
+        if i.role == 1 :
+            return {"msg":"Valid"}
+    return {"msg": "Invalid"}
+
 # @cache.cached(timeout=60)
 @app.route("/login", methods=["POST"])
 def login():
@@ -255,10 +266,11 @@ def req_fetch():
     for i in r:
         u=User.query.filter_by(id=i.user_id).first()
         b=Book.query.filter_by(id=i.book_id).first()
-        if i.req=="pdf":
-            l2.append({"id":i.id,"type":i.req,"name":u.name,"Book":b.name})
-        else:
-            l.append({"id":i.id,"type":i.req,"name":u.name,"Book":b.name})
+        if b!=None:
+            if i.req=="pdf":
+                l2.append({"id":i.id,"type":i.req,"name":u.name,"Book":b.name})
+            else:
+                l.append({"id":i.id,"type":i.req,"name":u.name,"Book":b.name})
     return {"Req_get":l,"Req_pdf":l2}
 
 @app.route("/get_book",methods=["POST"])
