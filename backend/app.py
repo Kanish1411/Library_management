@@ -138,7 +138,6 @@ def fetch_lib():
 def sections():
     l=[]
     s=Section.query.all()
-    print(s)
     for i in s:
         l.append({"name":i.name,"id":i.id,"desc":i.desc,"date":i.date_created.strftime("%Y-%m-%d")})
     return l
@@ -202,10 +201,12 @@ def Delete_book():
 @app.route("/fetch_bk_det",methods=["POST"])
 def fetch_bk_det():
     book=Book.query.filter_by(id=request.get_json().get("bk_id")).first()
+    r=Reads.query.filter_by(sec_id=book.sec_id).first()
+    r.reads+=1
+    db.session.commit()
     l=[]
     if book:
         image_base64 = base64.b64encode(book.image).decode('utf-8')
-        # sec=Section.query
         l.append({"id": book.id,"name": book.name,"author": book.Author,"image": image_base64})
     return {"book":l}
 
@@ -214,7 +215,7 @@ def get_book_page(book_id, page_no=0):
     book = Book.query.filter_by(id=book_id).first()
     r=Reads.query.filter_by(sec_id=book.sec_id).first()
     r.pg_read+=1
-    db.commit()
+    db.session.commit()
     if book and book.content:
         try:
             pdf_stream = BytesIO(book.content)
@@ -265,11 +266,12 @@ def get_book():
     v=request.get_json()
     r=Requests.query.filter_by(req="Book",user_id=v.get("id"),book_id=v.get("bk_id")).first()
     r1=Requests.query.filter_by(user_id=v.get("id")).all()
-    print(r1)
+    r2=Reads.query.filter_by(sec_id=Book.query.filter_by(id=v.get("bk_id")).first().sec_id).first()
     if  r1!=None and len(r1)>4:
         return {"err":"Requested 5 books already"}
     if r == None:
         r=Requests(req="Book",user_id=v.get("id"),book_id=v.get("bk_id"))
+        r2.lends+=1
         db.session.add(r)
         db.session.commit()
         return {"msg":"Request Successful"}
@@ -467,6 +469,23 @@ def user_fetch(id):
         image_base64 = base64.b64encode(b.image).decode('utf-8')
         l.append({"id":i.id,"bk_name":b.name,"time":str(i.time_left-datetime.now()),"author": b.Author,"image": image_base64})
     return{"name":u.name,'l':l}
+
+@app.route('/reads', methods=['GET'])
+def get_section_reads():
+    sections = Reads.query.all()
+    if sections:
+        section_data = []
+        for section in sections:
+            section_data.append({
+                'sec_id': section.sec_id,
+                'reads': section.reads,
+                'pg_read': section.pg_read,
+                'pdfs': section.pdfs,
+                'lends': section.lends
+            })
+        return jsonify(section_data)
+    else:
+        return jsonify({"error": "No data found"}), 404
 
 if __name__ == "__main__":
     with app.app_context():

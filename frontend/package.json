@@ -12,9 +12,11 @@
     "@popperjs/core": "^2.11.8",
     "axios": "^1.7.5",
     "bootstrap": "^5.3.3",
+    "chart.js": "^4.4.4",
     "crypto-js": "^4.2.0",
     "pdfjs-dist": "^4.6.82",
     "vue": "^3.4.29",
+    "vue-chartjs": "^5.3.1",
     "vue-router": "^4.3.3",
     "vuex": "^4.1.0"
   },

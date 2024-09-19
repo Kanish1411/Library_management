@@ -10,11 +10,12 @@ import User from '@/components/user.vue'
 import Read_book from '@/components/Read_book.vue'
 import Get_book from '@/components/Get_book.vue'
 import Requests from '@/components/Requests.vue'
-import My_books from '@/components/my_books.vue'
+import My_books from '@/components/My_books.vue'
 import Update_sec from '@/components/Update_sec.vue'
 import Update_book from '@/components/Update_book.vue'
 import Lendings from '@/components/Lendings.vue'
 import Search from '@/components/Search.vue'
+import Charts from '@/components/Charts.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -94,6 +95,10 @@ const router = createRouter({
       path:"/search/:id",
       component:Search
     },
+    {
+      path:"/chart",
+      component:Charts
+    }
   ]
 })
 
