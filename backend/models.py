@@ -54,4 +54,3 @@ class Reads(db.Model):
     pg_read=db.Column(db.Integer,default=0)
     pdfs=db.Column(db.Integer,default=0)
     lends=db.Column(db.Integer,default=0)
-    

@@ -8,10 +8,10 @@ import hashlib, random
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import Book, Lendings, Reads, db, User, Role, Section,Requests
-# from worker import celery_init_app
 from tasks import send_email_task, send_pdf_task
 from io import BytesIO
 import fitz
+# from worker import celery_init_app
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///DB.db"
@@ -341,9 +341,11 @@ def fetch_mybooks():
 @app.route("/return_bk",methods=["POST"])
 def ret_bk():
     l=Lendings.query.filter_by(book_id=request.get_json().get("bk_id")).first()
-    db.session.delete(l)
+    r=Requests.query.filter_by(id=l.req_id).first()
     bk=Book.query.filter_by(id=request.get_json().get("bk_id")).first()
     bk.available=True
+    db.session.delete(l)
+    db.session.delete(r)
     db.session.commit()
     return {}
 
@@ -418,6 +420,8 @@ def fetch_lend():
 def revoke():
     v=request.get_json()
     l=Lendings.query.filter_by(id=v.get("id")).first()
+    r=Requests.query.filter_by(id=l.req_id).first()
+    db.session.delete(r)
     bk=Book.query.filter_by(id=l.book_id).first()
     bk.available=True
     db.session.delete(l)
