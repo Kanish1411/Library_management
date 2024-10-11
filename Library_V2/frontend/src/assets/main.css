@@ -1,0 +1,91 @@
+@import './base.css';
+#app {
+  margin: 0 auto;
+  padding: 0;
+  font-weight: normal;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.message {
+  position: fixed;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px;
+  width: 100%;
+  text-align: center;
+  transition: top 0.5s ease;
+}
+
+.success-message {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.error-message {
+  background-color: #ff000036;
+}
+.container-color{
+  margin: 2% auto;
+  border-radius: 50px;
+  padding:2%;
+  background-color: rgba(0, 0, 0, 0.1);
+  width:60%;
+}
+
+.book-container {
+  width:200px;
+  margin: 5px auto;
+  padding: 10px;
+  /* border: 1px solid #000000; */
+  border-radius: 15px;
+  background-color: #00000038;
+}
+
+.book-image {
+  width: 165px;         
+  height: 150px;
+  margin-left: 7px;
+  border-radius: 5px;
+  object-fit: cover; 
+  object-position: center;
+}
+.book-container:hover{
+  filter: brightness(1.15);
+  opacity: 0.95;
+  background-color: #00000018;
+}
+
+.book{
+  display:flex;
+}
+
+.buttons{
+  bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+}
+
+.img-holder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+.responsive-image {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+}

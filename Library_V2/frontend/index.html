@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+    <title>Library management</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+    <style>
+      body {
+        transition: background 1.5s ease;
+      }
+      .gradient-background {
+        background: linear-gradient(270deg, #fff09e, #feb47b7a, #86a8e7b4, #a5e6a6bb);
+        background-size: 400% 400%;
+        animation: gradientShift 16s ease infinite;
+      }
+      .light-mode {
+        background-color: rgb(216, 216, 216);
+      }
+      .dark-mode {
+        background-color: #333;
+        color: white;
+      }
+      @keyframes gradientShift {
+        0% { background-position: 0% 0%; }
+        50% { background-position: 100% 100%; }
+        100% { background-position: 0% 0%; }
+      }
+      .controls{
+        position: relative;
+        bottom: 0;
+        width: 100%; 
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="controls">
+      <button class="btn btn-primary" onclick="gradient()">Gradient Background</button>
+      <button class="btn btn-light" onclick="light()">Light mode</button>
+      <button class="btn btn-dark" onclick="dark()">Dark Mode</button>
+    </div>
+    <script>
+      window.onload = function() {
+        const mode = localStorage.getItem('backgroundMode');
+        if (mode) {
+          document.body.className = mode;
+        }
+      };
+      function gradient() {
+        document.body.className = 'gradient-background';
+        localStorage.setItem('backgroundMode', 'gradient-background'); // Save the mode
+      }
+    
+      function light() {
+        document.body.className = 'light-mode';
+        localStorage.setItem('backgroundMode', 'light-mode'); // Save the mode
+      }
+      function dark() {
+        document.body.className = 'dark-mode';
+        localStorage.setItem('backgroundMode', 'dark-mode'); // Save the mode
+      }
+    </script>
+  </body>
+  </html>
